@@ -13,7 +13,7 @@
  */
 package info.guardianproject.net.http;
 
-import info.guardianproject.net.OrbotSocksHttpClient;
+import info.guardianproject.net.SocksHttpClient;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -52,8 +52,6 @@ public class HttpManager {
 	private final static String TAG = "HttpManager";
 	
 	private final static String POST_MIME_TYPE = "application/x-www-form-urlencoded";
-		
-	private final static String POST_MIME_TYPE_FILE = "multipart/form-data";
 	
 	public static String doGet (String serviceEndpoint, Properties props) throws Exception
 	{
@@ -114,7 +112,7 @@ public class HttpManager {
 	public static String doPost (String serviceEndpoint, Properties props) throws Exception
 	{
 
-		DefaultHttpClient httpClient = new OrbotSocksHttpClient();
+		DefaultHttpClient httpClient = new SocksHttpClient();
 		
 		HttpPost request = new HttpPost(serviceEndpoint);
 		HttpResponse response = null;

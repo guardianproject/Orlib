@@ -28,12 +28,10 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import net.sourceforge.jsocks.socks.Socks5Proxy;
-import net.sourceforge.jsocks.socks.SocksException;
 import net.sourceforge.jsocks.socks.SocksSocket;
 
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.scheme.SocketFactory;
-import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
 
@@ -48,9 +46,6 @@ public class SocksSocketFactory implements SocketFactory {
 	SocksSocket server = null;
 	private static Socks5Proxy sProxy = null;
 
-	private final static String DEFAULT_HOST = "127.0.0.1";
-	private final static int DEFAULT_PORT = 9050;
-	
 	/**
 	 * Construct a SocksSocketFactory that uses the provided SOCKS proxy.
 	 * @param proxyaddress the IP address of the SOCKS proxy
@@ -98,23 +93,8 @@ public class SocksSocketFactory implements SocketFactory {
             sock.bind(isa);
         }
 
-        int timeout = HttpConnectionParams.getConnectionTimeout(params);
-        
-        // Pipe this socket over the proxy
-      //  sock = mSocksProxy.connectSocksProxy(sock, host, port, timeout);
-        
-    	
-		try {
-			sock =  new SocksSocket(sProxy,host, port);
-		} catch (SocksException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
-        return sock;
+        return new SocksSocket(sProxy,host, port);
 		
 	}
 	
@@ -130,9 +110,9 @@ public class SocksSocketFactory implements SocketFactory {
 		return false;
 	}
 	
-	public static SocketFactory getSocketFactory ()
+	public static SocketFactory getSocketFactory (String host, int port)
 	{
-		return new SocksSocketFactory (DEFAULT_HOST, DEFAULT_PORT);
+		return new SocksSocketFactory (host, port);
 	}
 
 }
