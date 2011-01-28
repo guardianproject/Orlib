@@ -57,13 +57,14 @@ public class SocksSocketFactory implements SocketFactory {
 
 		try {
 			sProxy = new Socks5Proxy(proxyaddress, proxyport);
+			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		sProxy.resolveAddrLocally(false);
-	
+		sProxy.resolveAddrLocally(true);
+		
 
 	}
 	
