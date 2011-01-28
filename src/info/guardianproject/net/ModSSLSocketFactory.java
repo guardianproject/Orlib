@@ -57,7 +57,10 @@ import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.BrowserCompatHostnameVerifier;
 import org.apache.http.conn.ssl.StrictHostnameVerifier;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
+
+import android.widget.Toast;
 
 
 
@@ -165,18 +168,17 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
      * Gets an singleton instance of the SSLProtocolSocketFactory.
      * @return a SSLProtocolSocketFactory
      */
-    public static ModSSLSocketFactory getSocketFactory(String proxyhost, int proxyport) {
+    public static ModSSLSocketFactory getSocketFactory() {
     	if (DEFAULT_FACTORY == null) {
-    		DEFAULT_FACTORY = new ModSSLSocketFactory(proxyhost, proxyport);
+    		DEFAULT_FACTORY = new ModSSLSocketFactory();
     	}
 		return DEFAULT_FACTORY;
     }
     
     private final SSLContext sslcontext;
     private final javax.net.ssl.SSLSocketFactory socketfactory;
-    //private final HostNameResolver nameResolver;
+    private final HostNameResolver nameResolver;
     private X509HostnameVerifier hostnameVerifier = BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
-    private SocksSocketFactory mSocksSocketFactory = null;
 
     public ModSSLSocketFactory(
         String algorithm, 
@@ -202,7 +204,7 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
         this.sslcontext = SSLContext.getInstance(algorithm);
         this.sslcontext.init(keymanagers, trustmanagers, random);
         this.socketfactory = this.sslcontext.getSocketFactory();
-        //this.nameResolver = nameResolver;
+        this.nameResolver = nameResolver;
     }
 
     public ModSSLSocketFactory(
@@ -236,7 +238,7 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
         super();
         this.sslcontext = null;
         this.socketfactory = socketfactory;
-        //this.nameResolver = null;
+        this.nameResolver = null;
     }
 
     /**
@@ -244,12 +246,11 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
      * This constructor is used exclusively to instantiate the factory for
      * {@link #getSocketFactory getSocketFactory}.
      */
-    private ModSSLSocketFactory(String host, int port) {
+    private ModSSLSocketFactory() {
         super();
         this.sslcontext = null;
         this.socketfactory = HttpsURLConnection.getDefaultSSLSocketFactory();
-        //this.nameResolver = null;
-        this.mSocksSocketFactory = new SocksSocketFactory(host, port);
+        this.nameResolver = null;
     }
 
     private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password)
@@ -282,8 +283,8 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
     	// SSL Sockets don't work at the moment.
     	//throw new SSLException("SSL socket functionality broken");
         // the cast makes sure that the factory is working as expected
-        //return (SSLSocket) this.socketfactory.createSocket();
-    	return new Socket();
+        return (SSLSocket) this.socketfactory.createSocket();
+    //	return new Socket();
     	//return null;
     }
 
@@ -309,9 +310,7 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
         //    ((sock != null) ? sock : createSocket());
         Socket underlying = sock;
         if (underlying == null) underlying = new Socket(); 
-        
-        mSocksSocketFactory.connectSocket(underlying, host, port, localAddress, localPort, params);
-        
+                
         SSLSocket sslsock = (SSLSocket)this.socketfactory.createSocket(underlying, host, port, true);
         if ((localAddress != null) || (localPort > 0)) {
 
@@ -324,19 +323,19 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
             sslsock.bind(isa);
         }
 
-//        int connTimeout = HttpConnectionParams.getConnectionTimeout(params);
-//        int soTimeout = HttpConnectionParams.getSoTimeout(params);
-//
-//        InetSocketAddress remoteAddress;
-//        if (this.nameResolver != null) {
-//            remoteAddress = new InetSocketAddress(this.nameResolver.resolve(host), port); 
-//        } else {
-//            remoteAddress = new InetSocketAddress(host, port);            
-//        }
-//        
-//        //sslsock.connect(remoteAddress, connTimeout);
+        int connTimeout = HttpConnectionParams.getConnectionTimeout(params);
+        int soTimeout = HttpConnectionParams.getSoTimeout(params);
 
-        sslsock.setSoTimeout(0);
+        InetSocketAddress remoteAddress;
+        if (this.nameResolver != null) {
+            remoteAddress = new InetSocketAddress(this.nameResolver.resolve(host), port); 
+        } else {
+            remoteAddress = new InetSocketAddress(host, port);            
+        }
+        
+        sslsock.connect(remoteAddress, connTimeout);
+
+        sslsock.setSoTimeout(soTimeout);
         try {
             hostnameVerifier.verify(host, sslsock);
             // verifyHostName() didn't blowup - good!
@@ -392,14 +391,22 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
         final int port,
         final boolean autoClose
     ) throws IOException, UnknownHostException {
-        SSLSocket sslSocket = (SSLSocket) this.socketfactory.createSocket(
+        
+    	int oport = port;
+    	
+    	if (oport == -1)
+    		oport = 443;
+    	
+    	SSLSocket sslSocket = (SSLSocket) this.socketfactory.createSocket(
               socket,
               host,
-              port,
+              oport,
               autoClose
         );
-        hostnameVerifier.verify(host, sslSocket);
-        // verifyHostName() didn't blowup - good!
+    	
+    	hostnameVerifier.verify(host, sslSocket);
+    	
+    		// verifyHostName() didn't blowup - good!
         return sslSocket;
     }
 

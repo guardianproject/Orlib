@@ -27,8 +27,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import net.sourceforge.jsocks.socks.Socks5Proxy;
-import net.sourceforge.jsocks.socks.SocksSocket;
+import net.sourceforge.jsocks.socks.*;
 
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.scheme.SocketFactory;
@@ -42,7 +41,6 @@ import org.apache.http.params.HttpParams;
  */
 public class SocksSocketFactory implements SocketFactory {
 
-	//SocksProxy mSocksProxy = null;
 	SocksSocket server = null;
 	private static Socks5Proxy sProxy = null;
 
@@ -51,21 +49,13 @@ public class SocksSocketFactory implements SocketFactory {
 	 * @param proxyaddress the IP address of the SOCKS proxy
 	 * @param proxyport the port of the SOCKS proxy
 	 */
-	public SocksSocketFactory(String proxyaddress, int proxyport) {
-		//mSocksProxy = new SocksProxy(proxyaddress, proxyport);
-		
+	public SocksSocketFactory(String proxyaddress, int proxyport) throws  UnknownHostException {
 
-		try {
-			sProxy = new Socks5Proxy(proxyaddress, proxyport);
-			
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		sProxy = new Socks5Proxy(proxyaddress, proxyport);
 		
-		sProxy.resolveAddrLocally(true);
-		
-
+		//set this to false - we want the SOCKS proxy to handle DNS for us
+		sProxy.resolveAddrLocally(false);
+	
 	}
 	
 	@Override
@@ -94,7 +84,6 @@ public class SocksSocketFactory implements SocketFactory {
             sock.bind(isa);
         }
 
-		
         return new SocksSocket(sProxy,host, port);
 		
 	}
@@ -111,7 +100,7 @@ public class SocksSocketFactory implements SocketFactory {
 		return false;
 	}
 	
-	public static SocketFactory getSocketFactory (String host, int port)
+	public static SocketFactory getSocketFactory (String host, int port) throws UnknownHostException
 	{
 		return new SocksSocketFactory (host, port);
 	}

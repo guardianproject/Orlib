@@ -56,7 +56,7 @@ public class HttpManager {
 	public static String doGet (String serviceEndpoint, Properties props) throws Exception
 	{
 
-		HttpClient httpClient = new DefaultHttpClient();
+		HttpClient httpClient = new SocksHttpClient();
 
 		StringBuilder uriBuilder = new StringBuilder(serviceEndpoint);
 	

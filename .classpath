@@ -3,9 +3,11 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry exported="true" kind="lib" path="lib/apache-mime4j-0.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jsocks.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpcomponents-client-4.0.1/lib/httpclient-4.0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpcomponents-client-4.0.1/lib/httpmime-4.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.1.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-cache-4.1.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.1.jar"/>
+	<classpathentry kind="lib" path="lib/httpmime-4.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
