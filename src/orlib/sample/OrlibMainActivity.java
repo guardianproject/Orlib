@@ -1,26 +1,25 @@
 package orlib.sample;
 
+import info.guardianproject.net.http.ClientExecuteSOCKS;
+import info.guardianproject.net.http.SocksHttpClient;
+import info.guardianproject.orlib.R;
+
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.SocketAddress;
+import java.net.Proxy;
 import java.net.UnknownHostException;
-
-import javax.net.SocketFactory;
-
-import info.guardianproject.net.SocksHttpClient;
-import info.guardianproject.net.SocksSocketFactory;
-import info.guardianproject.orlib.R;
-import info.guardianproject.orlib.R.layout;
 
 import net.sourceforge.jsocks.socks.Socks5Proxy;
 import net.sourceforge.jsocks.socks.SocksSocket;
 
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -66,7 +65,8 @@ public class OrlibMainActivity extends Activity {
         btn.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 			 
-				checkHTTP("http://check.torproject.org");
+				//use the local Privoxy->Tor HTTP proxy
+				checkHTTP("http://check.torproject.org", Proxy.Type.HTTP, "localhost", 8118);
 				
 			}
         });
@@ -77,8 +77,8 @@ public class OrlibMainActivity extends Activity {
         btn.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 			 
-				checkHTTP("https://check.torproject.org:443");
-
+				//use the direct SOCKS5 proxy built into Tor itself (more secure)
+				checkHTTP("https://check.torproject.org:443/", Proxy.Type.SOCKS, "localhost", 9050);
 				
 			}
         });
@@ -145,18 +145,30 @@ public class OrlibMainActivity extends Activity {
     }
     
     
-    public void checkHTTP (String url)
+    public void checkHTTP (String url, Proxy.Type proxyType, String host, int port)
     {
     
     	textView.setText("Attempting to connect to: " + url + "\n");
 
     	try
     	{
-    		//get an HTTP client configured to work with local Tor SOCKS5 proxy
-    		HttpClient hc = new SocksHttpClient("localhost",9050);
-        	
+    		HttpClient httpclient = null;
+    		
+    		if (proxyType == Proxy.Type.SOCKS)
+    		{
+    			//get an HTTP client configured to work with local Tor SOCKS5 proxy
+    			httpclient = new SocksHttpClient(host, port);
+    		}
+    		else if (proxyType == Proxy.Type.HTTP)
+    		{
+    		
+    			httpclient = new DefaultHttpClient();
+        		HttpHost proxy = new HttpHost(host, port);
+        		httpclient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+    		}
+    		
         	HttpGet httpget = new HttpGet(url);
-    		HttpResponse response = hc.execute(httpget);
+    		HttpResponse response = httpclient.execute(httpget);
 
     		textView.append( response.getStatusLine().getStatusCode() + "\n");
     	

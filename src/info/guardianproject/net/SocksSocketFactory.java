@@ -100,9 +100,14 @@ public class SocksSocketFactory implements SocketFactory {
 		return false;
 	}
 	
+	private static SocksSocketFactory _instance;
+	
 	public static SocketFactory getSocketFactory (String host, int port) throws UnknownHostException
 	{
-		return new SocksSocketFactory (host, port);
+		if (_instance == null)
+			_instance = new SocksSocketFactory (host, port);
+
+		return _instance;
 	}
 
 }

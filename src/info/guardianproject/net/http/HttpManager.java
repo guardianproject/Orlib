@@ -13,7 +13,6 @@
  */
 package info.guardianproject.net.http;
 
-import info.guardianproject.net.SocksHttpClient;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
