@@ -31,6 +31,8 @@
 
 package info.guardianproject.net.http;
 
+import info.guardianproject.net.SocksSocketFactory;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -52,8 +54,11 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import net.sourceforge.jsocks.socks.Socks5Proxy;
+
 import org.apache.http.conn.scheme.HostNameResolver;
 import org.apache.http.conn.scheme.LayeredSocketFactory;
+import org.apache.http.conn.scheme.SocketFactory;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.BrowserCompatHostnameVerifier;
 import org.apache.http.conn.ssl.StrictHostnameVerifier;
@@ -160,6 +165,7 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
         = new StrictHostnameVerifier();
     
     private static Proxy proxy;
+    private static InetSocketAddress proxyAddr;
     
     /**
      * The factory using the default JVM settings for secure connections.
@@ -188,9 +194,11 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
     	}
     	
 
-		InetSocketAddress socksaddr = new InetSocketAddress(proxyHost, proxyPort);
-        proxy = new Proxy(proxyType, socksaddr);
-        
+    	proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
+    	
+    	proxy = new Proxy(proxyType, proxyAddr);
+    	
+    	
 		return DEFAULT_FACTORY;
     }
     
@@ -332,14 +340,23 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
         //if (underlying == null) underlying = new Socket(); 
           
       //  Socket underlying = SocksSocketFactory.getSocketFactory("localhost", 9050).connectSocket(sock, host, port, localAddress, localPort, params);
+
+        int connTimeout = HttpConnectionParams.getConnectionTimeout(params);
+        int soTimeout = HttpConnectionParams.getSoTimeout(params);
         
         Socket underlying = null;
         
         if (proxy != null)
-        	{
-        	underlying = new Socket(proxy);	
-        	underlying.connect(new InetSocketAddress(host,port));
-        	}
+        {
+        	//underlying = new Socket(proxy);
+        //	InetSocketAddress sAddress = InetSocketAddress.createUnresolved(host,port);
+       // 	InetSocketAddress sAddress = new InetSocketAddress(host,port);
+        	//underlying.connect(sAddress,Socks soTimeout);
+        	
+        	SocksSocketFactory ssf = SocksSocketFactory.getSocketFactory(proxyAddr.getHostName(),proxyAddr.getPort() );     	
+        	underlying = ssf.createSocket(null, null, -1, params);
+        //	underlying.connect(sAddress);
+        }
         
         SSLSocket sslsock = (SSLSocket)this.socketfactory.createSocket(underlying, host, port, true);
         
@@ -355,21 +372,20 @@ public class ModSSLSocketFactory implements LayeredSocketFactory {
         }
         
 
-        int connTimeout = HttpConnectionParams.getConnectionTimeout(params);
-        int soTimeout = HttpConnectionParams.getSoTimeout(params);
-
-        InetSocketAddress remoteAddress;
-        if (this.nameResolver != null) {
-            remoteAddress = new InetSocketAddress(this.nameResolver.resolve(host), port); 
-        } else {
-            remoteAddress = new InetSocketAddress(host, port);            
-        }
+      
+			InetSocketAddress remoteAddress;
+			if (this.nameResolver != null) {
+			    remoteAddress = new InetSocketAddress(this.nameResolver.resolve(host), port); 
+			} else {
+			    remoteAddress = new InetSocketAddress(host, port);            
+			}
         
-        if (proxy == null)
-        {
-        	sslsock.connect(remoteAddress, connTimeout);
-        	sslsock.setSoTimeout(soTimeout);
-        }
+       
+        	
+       
+        
+        sslsock.connect(remoteAddress, connTimeout);
+    	sslsock.setSoTimeout(soTimeout);
         
         try {
         	

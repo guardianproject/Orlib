@@ -88,6 +88,33 @@ public class SocksSocketFactory implements SocketFactory {
 		
 	}
 	
+	public Socket createSocket(Socket sock,
+			InetAddress localAddress, int localPort, HttpParams params) throws IOException,
+			UnknownHostException, ConnectTimeoutException {
+		
+		
+        if (params == null) {
+            throw new IllegalArgumentException("Parameters may not be null.");
+        }
+
+        if (sock == null)
+            sock = createSocket();
+
+        if ((localAddress != null) || (localPort > 0)) {
+
+            // we need to bind explicitly
+            if (localPort < 0)
+                localPort = 0; // indicates "any"
+
+            InetSocketAddress isa =
+                new InetSocketAddress(localAddress, localPort);
+            sock.bind(isa);
+        }
+
+        return new SocksSocket(sProxy);
+		
+	}
+	
     
     
 	@Override
@@ -102,7 +129,7 @@ public class SocksSocketFactory implements SocketFactory {
 	
 	private static SocksSocketFactory _instance;
 	
-	public static SocketFactory getSocketFactory (String host, int port) throws UnknownHostException
+	public static SocksSocketFactory getSocketFactory (String host, int port) throws UnknownHostException
 	{
 		if (_instance == null)
 			_instance = new SocksSocketFactory (host, port);

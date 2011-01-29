@@ -1,6 +1,5 @@
 package orlib.sample;
 
-import info.guardianproject.net.http.ClientExecuteSOCKS;
 import info.guardianproject.net.http.SocksHttpClient;
 import info.guardianproject.orlib.R;
 
@@ -78,7 +77,9 @@ public class OrlibMainActivity extends Activity {
 			public void onClick(View v) {
 			 
 				//use the direct SOCKS5 proxy built into Tor itself (more secure)
-				checkHTTP("https://check.torproject.org:443/", Proxy.Type.SOCKS, "localhost", 9050);
+				//SOCKS with HTTPS not quite working yet, so use HTTP for now
+				//checkHTTP("https://check.torproject.org:443/", Proxy.Type.SOCKS, "localhost", 9050);
+				checkHTTP("https://check.torproject.org/", Proxy.Type.HTTP, "localhost", 8118);
 				
 			}
         });
@@ -175,7 +176,7 @@ public class OrlibMainActivity extends Activity {
     	}
     	catch (Exception e)
     	{
-    		textView.append(e.getMessage());
+    		//textView.append(e.getMessage());
     		
     		Log.e(TAG, "Unable to connect to torproject",e);
     	}

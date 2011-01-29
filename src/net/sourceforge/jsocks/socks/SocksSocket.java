@@ -98,9 +98,9 @@ public class SocksSocket extends Socket{
 
       if(p == null) throw new SocksException(Proxy.SOCKS_NO_PROXY);
       
-      proxy=p;
+      //proxy=p;
       
-      //proxy = p.copy();
+      proxy = p.copy();
       remoteHost = host;
       remotePort = port;
       if(proxy.isDirect(host)){
@@ -110,9 +110,66 @@ public class SocksSocket extends Socket{
       else
          processReply(proxy.connect(host,port));
    }
-
-
    /**
+    * Connects to host port using given proxy server.
+      @param p Proxy to use.
+      @throws UnknownHostException 
+      If one of the following happens:
+      <ol>
+
+      <li> Proxy settings say that address should be resolved locally, but
+           this fails.
+      <li> Proxy settings say that the host should be contacted directly but
+           host name can't be resolved. 
+      </ol>
+      @throws SocksException
+      If one of the following happens:
+      <ul>
+       <li> Proxy is is null.
+       <li> Proxy settings say that the host should be contacted directly but
+            this fails.
+       <li> Socks Server can't be contacted.
+       <li> Authentication fails.
+       <li> Connection is not allowed by the SOCKS proxy.
+       <li> SOCKS proxy can't establish the connection.
+       <li> Any IO error occured.
+       <li> Any protocol error occured.
+      </ul>
+      @throws IOexception if anything is wrong with I/O.
+      @see Socks5Proxy#resolveAddrLocally
+    */
+   public SocksSocket(Proxy p)
+	  throws SocksException,UnknownHostException{
+
+
+      if(p == null) throw new SocksException(Proxy.SOCKS_NO_PROXY);
+      
+      //proxy=p;
+      
+      proxy = p.copy();
+     
+   }
+
+
+   @Override
+public void connect(SocketAddress remoteAddr, int timeout) throws IOException {
+	
+	   remoteHost = ((InetSocketAddress)remoteAddr).getHostName();
+	     remotePort = ((InetSocketAddress)remoteAddr).getPort();
+	     if(proxy.isDirect(remoteHost)){
+	        remoteIP = InetAddress.getByName(remoteHost);
+	        doDirect();
+	     }
+	     else
+	        processReply(proxy.connect(remoteHost,remotePort));;
+}
+@Override
+public void connect(SocketAddress remoteAddr) throws IOException {
+	
+	connect(remoteAddr, -1);
+     
+}
+/**
     * Tryies to connect to given ip and port
     * using default proxy. If no default proxy speciefied
     * it throws SocksException with error code SOCKS_NO_PROXY.
