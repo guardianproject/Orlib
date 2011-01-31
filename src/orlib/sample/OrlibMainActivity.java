@@ -50,6 +50,7 @@ public class OrlibMainActivity extends Activity {
 				{
 					public void run()
 					{
+						//this opens a direct socks socket on port 80
 						openSocksSocket("check.torproject.org",80);
 					}
 				};
@@ -67,6 +68,9 @@ public class OrlibMainActivity extends Activity {
 				//use the local Privoxy->Tor HTTP proxy
 				checkHTTP("http://check.torproject.org", Proxy.Type.HTTP, "localhost", 8118);
 				
+				//you can also use SOCKS with non HTTPS/S links
+				//checkHTTP("http://check.torproject.org", Proxy.Type.SOCKS, "localhost", 9050);
+
 			}
         });
         
@@ -77,10 +81,14 @@ public class OrlibMainActivity extends Activity {
 			public void onClick(View v) {
 			 
 				//use the direct SOCKS5 proxy built into Tor itself (more secure)
-				//SOCKS with HTTPS not quite working yet, so use HTTP for now
+				
+				//SOCKS with HTTP/S not quite working yet (DNS leaks)
 				//checkHTTP("https://check.torproject.org:443/", Proxy.Type.SOCKS, "localhost", 9050);
+				
+				/// so use HTTP proxy for now, it will work just fine!
 				checkHTTP("https://check.torproject.org/", Proxy.Type.HTTP, "localhost", 8118);
 				
+
 			}
         });
         

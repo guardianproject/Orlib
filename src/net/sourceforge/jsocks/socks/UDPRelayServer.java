@@ -1,10 +1,14 @@
 package net.sourceforge.jsocks.socks;
 
-import net.sourceforge.jsocks.socks.server.*;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
-import java.net.*;
-import java.io.*;
-
+import net.sourceforge.jsocks.socks.server.ServerAuthenticator;
 import android.util.Log;
 
 /**
