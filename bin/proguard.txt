@@ -1,3 +1,0 @@
-# view AndroidManifest.xml #generated:9
--keep class orlib.sample.OrlibMainActivity { <init>(...); }
-
